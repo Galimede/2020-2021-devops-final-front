@@ -1,6 +1,6 @@
 version: 2.1
 jobs: 
-  install:
+  build:
     docker:
       - image: cimg/node:15.5.1-browsers
     steps: 
@@ -25,7 +25,7 @@ jobs:
         - run:
           - name: Launch test 
           - command : yarn test
-    build: 
+    prod-build: 
       docker:
         - image: cimg/node:15.5.1-browsers
       steps: 
@@ -64,12 +64,11 @@ jobs:
 workflows:
   build_deploy: 
     jobs: 
-      - install
-      - build:
+      - build
+      - prod-build:
           requires: 
             - install
       - deploy: 
           context: netlify_devops_final
           requires: 
-            # - install 
-            - build
+            - prod-build 
