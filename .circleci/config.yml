@@ -1,0 +1,75 @@
+version: 2.1
+jobs: 
+  install:
+    docker:
+      - image: cimg/node:15.5.1-browsers
+    steps: 
+      - checkout
+      - restore_cache: 
+          keys: 
+            - yarn-packages-{{ checksum "yarn.lock" }}--{{ .Environment.CACHE_VERSION }}
+            - yarn-packages
+      - run: yarn global add node-gyp && yarn install
+      - save_cache:
+          key: yarn-packages-{{ checksum "yarn.lock" }}--{{ .Environment.CACHE_VERSION }}
+          paths: 
+          - node_modules
+    test: 
+      docker:
+        - image: cimg/node:15.5.1-browsers
+      steps: 
+        - checkout
+        - restore_cache: 
+            keys: 
+              - yarn-packages-{{ checksum "yarn.lock" }}--{{ .Environment.CACHE_VERSION }}
+        - run:
+          - name: Launch test 
+          - command : yarn test
+    build: 
+      docker:
+        - image: cimg/node:15.5.1-browsers
+      steps: 
+        - checkout
+        - restore_cache: 
+            keys: 
+              - yarn-packages-{{ checksum "yarn.lock" }}--{{ .Environment.CACHE_VERSION }}
+        - run:
+          - name: Build for production 
+          - command : yarn run build
+        - run:
+          - name: Copy build to workspace
+          - command: |
+              ls
+              cp build/ /tmp/build -r
+        - store_artifacts:
+            path: /tmp/build
+        - persist_to_workspace:
+            root: /tmp
+            paths:
+              - build
+    deploy: 
+      docker:
+        - image: cimg/node:15.5.1-browsers
+      working_directory: ~/deploy-netlfify
+      steps:
+        - attach_workspace:
+            at: /tmp
+        - run:
+            name: Deploy app
+            command: |
+              sudo npm install -g --silent netlify-cli
+              ls /tmp
+              netlify deploy --prod --auth $NETLIFY_AUTH_TOKEN --dir=/tmp/build --site $NETLIFY_SITE_ID
+
+workflows:
+  build_deploy: 
+    jobs: 
+      - install
+      - build:
+          requires: 
+            - install
+      - deploy: 
+          context: netlify_devops_final
+          requires: 
+            # - install 
+            - build
