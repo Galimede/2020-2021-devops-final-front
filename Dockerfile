@@ -1,8 +1,6 @@
-FROM circleci/node:dubnium-browsers
+FROM node:dubnium-browsers
 
 WORKDIR /app
-
-COPY package*.json ./
 
 RUN yarn install
 
