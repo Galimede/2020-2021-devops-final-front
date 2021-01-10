@@ -1,4 +1,4 @@
-FROM node:dubnium-browsers
+FROM node:dubnium
 
 WORKDIR /app
 
