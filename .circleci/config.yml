@@ -67,7 +67,7 @@ workflows:
       - build
       - prod-build:
           requires: 
-            - install
+            - build
       - deploy-netlify: 
           context: netlify_devops_final
           requires: 
