@@ -7,11 +7,11 @@ jobs:
       - checkout
       - restore_cache: 
           keys: 
-            - yarn-packages-{{ checksum "yarn.lock" }}--{{ .Environment.CACHE_VERSION }}
+            - yarn-packages-{{ checksum "yarn.lock" }}-{{ .Environment.CACHE_VERSION }}
             - yarn-packages
       - run: yarn global add node-gyp && yarn install
       - save_cache:
-          key: yarn-packages-{{ checksum "yarn.lock" }}--{{ .Environment.CACHE_VERSION }}
+          key: yarn-packages-{{ checksum "yarn.lock" }}-{{ .Environment.CACHE_VERSION }}
           paths: 
           - node_modules
     test: 
@@ -21,7 +21,7 @@ jobs:
         - checkout
         - restore_cache: 
             keys: 
-              - yarn-packages-{{ checksum "yarn.lock" }}--{{ .Environment.CACHE_VERSION }}
+              - yarn-packages-{{ checksum "yarn.lock" }}-{{ .Environment.CACHE_VERSION }}
         - run:
           - name: Launch test 
           - command : yarn test
@@ -32,7 +32,7 @@ jobs:
         - checkout
         - restore_cache: 
             keys: 
-              - yarn-packages-{{ checksum "yarn.lock" }}--{{ .Environment.CACHE_VERSION }}
+              - yarn-packages-{{ checksum "yarn.lock" }}-{{ .Environment.CACHE_VERSION }}
         - run:
           - name: Build for production 
           - command : yarn run build
@@ -47,7 +47,7 @@ jobs:
             root: /tmp
             paths:
               - build
-    deploy: 
+    deploy-netlify: 
       docker:
         - image: cimg/node:15.5.1-browsers
       working_directory: ~/deploy-netlfify
@@ -68,7 +68,7 @@ workflows:
       - prod-build:
           requires: 
             - install
-      - deploy: 
+      - deploy-netlify: 
           context: netlify_devops_final
           requires: 
             - prod-build 
